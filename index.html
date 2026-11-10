@@ -1,55 +1,135 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Dentro il cubo — Missioni matematiche VR</title>
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>Il cubo misterioso - VR</title>
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 </head>
+
 <body>
-<a-scene background="color: #101827" vr-mode-ui="enabled: true" renderer="antialias: true">
-  <a-entity id="room"></a-entity>
+<a-scene background="color: #101827"
+         vr-mode-ui="enabled: true">
+
+  <!-- Pareti del cubo -->
+  <a-box position="0 1.6 0"
+         width="3.6"
+         height="3.6"
+         depth="3.6"
+         material="color: #38BDF8;
+                   opacity: 0.08;
+                   transparent: true;
+                   side: double">
+  </a-box>
+
+  <!-- Spigoli e vertici -->
+  <a-entity id="geometria"></a-entity>
+
+  <!-- Telecamera al centro del cubo -->
   <a-entity position="0 1.6 0">
-    <a-camera look-controls="enabled: true" wasd-controls="enabled: false">
-      <!-- Le domande seguono lo sguardo, senza mostrare le risposte. -->
-      <a-plane position="0 -0.49 -1.05" width="1.7" height="0.39"
-               material="color: #101827; opacity: 0.82; transparent: true; depthTest: false"
-               render-order="10"></a-plane>
-      <a-text value="Quanti spigoli vedi?\nQuanti vertici vedi?"
-              position="0 -0.49 -1.045" width="1.75" align="center"
-              color="#FFFFFF" wrap-count="30" line-height="58"
-              material="depthTest: false" render-order="11"></a-text>
+    <a-camera
+      look-controls="enabled: true"
+      wasd-controls="enabled: false">
+
+      <!-- Domande davanti agli occhi -->
+      <a-entity position="0 0.55 -1.4">
+
+        <a-plane
+          width="2.3"
+          height="0.65"
+          color="#14243A"
+          opacity="0.88">
+        </a-plane>
+
+        <a-text
+          value="QUANTI SPIGOLI VEDI?"
+          align="center"
+          color="#FFFFFF"
+          width="2.5"
+          position="0 0.14 0.02">
+        </a-text>
+
+        <a-text
+          value="QUANTI VERTICI VEDI?"
+          align="center"
+          color="#FFFFFF"
+          width="2.5"
+          position="0 -0.14 0.02">
+        </a-text>
+
+      </a-entity>
     </a-camera>
   </a-entity>
+
 </a-scene>
+
 <script>
-const room = document.querySelector('#room');
-const half = 1.8; // lato 3.6: piu' compatto del precedente lato 6
-const eyeHeight = 1.6;
-const v = [-half, half];
-function vertex(x,y,z) {
-  const el = document.createElement('a-sphere');
-  el.setAttribute('position', `${x} ${y+eyeHeight} ${z}`);
-  el.setAttribute('radius', '0.095');
-  el.setAttribute('color', '#FB923C');
-  room.appendChild(el);
-}
-function edge(a,b) {
-  const el = document.createElement('a-entity');
-  el.setAttribute('line', `start: ${a.join(' ')}; end: ${b.join(' ')}; color: #FDE047`);
-  room.appendChild(el);
-}
-for (const x of v) for (const y of v) for (const z of v) vertex(x,y,z);
-for (const y of v) for (const z of v) edge([-half,y+eyeHeight,z],[half,y+eyeHeight,z]);
-for (const x of v) for (const z of v) edge([x,-half+eyeHeight,z],[x,half+eyeHeight,z]);
-for (const x of v) for (const y of v) edge([x,y+eyeHeight,-half],[x,y+eyeHeight,half]);
-const walls = document.createElement('a-box');
-walls.setAttribute('position',`0 ${eyeHeight} 0`);
-walls.setAttribute('width','3.6');
-walls.setAttribute('height','3.6');
-walls.setAttribute('depth','3.6');
-walls.setAttribute('material','color: #38BDF8; opacity: 0.045; transparent: true; side: double; depthWrite: false');
-room.insertBefore(walls, room.firstChild);
+  const geometria = document.querySelector("#geometria");
+
+  const valori = [-1.8, 1.8];
+  const centroY = 1.6;
+
+  function creaSpigolo(a, b) {
+    const linea = document.createElement("a-entity");
+
+    linea.setAttribute("line", {
+      start: a.join(" "),
+      end: b.join(" "),
+      color: "#FFD700"
+    });
+
+    geometria.appendChild(linea);
+  }
+
+  // I 12 spigoli del cubo
+  for (const x of valori) {
+    for (const y of valori) {
+      creaSpigolo(
+        [x, centroY + y, -1.8],
+        [x, centroY + y, 1.8]
+      );
+    }
+  }
+
+  for (const x of valori) {
+    for (const z of valori) {
+      creaSpigolo(
+        [x, centroY - 1.8, z],
+        [x, centroY + 1.8, z]
+      );
+    }
+  }
+
+  for (const y of valori) {
+    for (const z of valori) {
+      creaSpigolo(
+        [-1.8, centroY + y, z],
+        [1.8, centroY + y, z]
+      );
+    }
+  }
+
+  // Sfere arancioni nei vertici
+  for (const x of valori) {
+    for (const y of valori) {
+      for (const z of valori) {
+        const sfera = document.createElement("a-sphere");
+
+        sfera.setAttribute(
+          "position",
+          `${x} ${centroY + y} ${z}`
+        );
+
+        sfera.setAttribute("radius", "0.12");
+        sfera.setAttribute("color", "#FF8C00");
+
+        geometria.appendChild(sfera);
+      }
+    }
+  }
 </script>
 </body>
 </html>
