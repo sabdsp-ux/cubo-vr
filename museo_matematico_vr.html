@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Museo matematico VR — Cubo e sfera</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script>
+AFRAME.registerComponent('gaze-switch', {
+  schema: {target: {type:'string'}},
+  init: function () {
+    const el=this.el, target=this.data.target;
+    el.addEventListener('click', () => {
+      document.querySelector('#cubo').setAttribute('visible',target==='cubo');
+      document.querySelector('#sfera').setAttribute('visible',target==='sfera');
+      document.querySelector('#domandaCubo').setAttribute('visible',target==='cubo');
+      document.querySelector('#domandaSfera').setAttribute('visible',target==='sfera');
+      document.querySelector('#stato').setAttribute('value',target==='cubo'?'STANZA 1 - CUBO':'STANZA 2 - SFERA');
+      document.querySelector('#mirino').setAttribute('material','color: #FFFFFF');
+    });
+  }
+});
+AFRAME.registerComponent('make-cube', {
+ init: function(){
+  const root=this.el, a=[-1.8,1.8], cy=1.6;
+  function line(p,q){const e=document.createElement('a-entity'); e.setAttribute('line',{start:p.join(' '),end:q.join(' '),color:'#FFD54A'});root.appendChild(e)}
+  for(const x of a)for(const y of a)line([x,cy+y,-1.8],[x,cy+y,1.8]);
+  for(const x of a)for(const z of a)line([x,cy-1.8,z],[x,cy+1.8,z]);
+  for(const y of a)for(const z of a)line([-1.8,cy+y,z],[1.8,cy+y,z]);
+  for(const x of a)for(const y of a)for(const z of a){const e=document.createElement('a-sphere');e.setAttribute('position',`${x} ${cy+y} ${z}`);e.setAttribute('radius','0.11');e.setAttribute('color','#FF8C32');root.appendChild(e)}
+ }
+});
+AFRAME.registerComponent('make-sphere', {
+ init: function(){
+  const root=this.el, R=2.2, cy=1.6;
+  function segment(a,b,color){const e=document.createElement('a-entity');e.setAttribute('line',{start:a.join(' '),end:b.join(' '),color});root.appendChild(e)}
+  const N=80;
+  for(let k=0;k<12;k++){
+    const phi=k*Math.PI/12;
+    for(let i=0;i<N;i++){
+      const t=i*Math.PI/N,u=(i+1)*Math.PI/N;
+      const p=[R*Math.sin(t)*Math.cos(phi),cy+R*Math.cos(t),R*Math.sin(t)*Math.sin(phi)];
+      const q=[R*Math.sin(u)*Math.cos(phi),cy+R*Math.cos(u),R*Math.sin(u)*Math.sin(phi)];
+      segment(p,q,'#57E5F5');
+    }
+  }
+  for(let j=-3;j<=3;j++){
+    const lat=j*Math.PI/12, r=R*Math.cos(lat),y=cy+R*Math.sin(lat);
+    for(let i=0;i<N;i++){
+      const t=i*2*Math.PI/N,u=(i+1)*2*Math.PI/N;
+      segment([r*Math.cos(t),y,r*Math.sin(t)],[r*Math.cos(u),y,r*Math.sin(u)],'#F8B7FF');
+    }
+  }
+ }
+});
+</script>
+</head>
+<body style="margin:0">
+<a-scene background="color:#081324" vr-mode-ui="enabled:true" renderer="antialias:true">
+  <a-entity id="cubo" make-cube>
+    <a-box position="0 1.6 0" width="3.6" height="3.6" depth="3.6" material="color:#3CA9E7;opacity:0.055;transparent:true;side:double"></a-box>
+    <a-entity position="0 1.6 -1.55" rotation="0 0 0">
+      <a-plane width="0.95" height="0.43" color="#173D57" opacity="0.95" gaze-switch="target:sfera" class="gaze-target"></a-plane>
+      <a-text value="VAI ALLA SFERA" align="center" color="#FFFFFF" width="1.6" position="0 0 0.012"></a-text>
+    </a-entity>
+  </a-entity>
+  <a-entity id="sfera" visible="false" make-sphere>
+    <a-entity position="0 1.6 -2" rotation="0 0 0">
+      <a-plane width="0.95" height="0.43" color="#173D57" opacity="0.95" gaze-switch="target:cubo" class="gaze-target"></a-plane>
+      <a-text value="TORNA AL CUBO" align="center" color="#FFFFFF" width="1.6" position="0 0 0.012"></a-text>
+    </a-entity>
+  </a-entity>
+  <a-entity position="0 1.6 0">
+    <a-camera look-controls="enabled:true" wasd-controls="enabled:false">
+      <a-cursor id="mirino" fuse="true" fuse-timeout="3000" raycaster="objects:.gaze-target" geometry="primitive:ring;radiusInner:0.008;radiusOuter:0.013" material="color:#FFFFFF;shader:flat" position="0 0 -0.8"></a-cursor>
+      <a-entity position="0 0.15 -1.35">
+        <a-plane width="1.7" height="0.48" color="#14243A" opacity="0.84"></a-plane>
+        <a-text id="stato" value="STANZA 1 - CUBO" color="#FFE18A" align="center" width="2.2" position="0 0.15 0.012"></a-text>
+        <a-text id="domandaCubo" value="Quanti spigoli vedi?\nQuanti vertici vedi?" color="#FFFFFF" align="center" width="2.2" position="0 -0.035 0.012"></a-text>
+        <a-text id="domandaSfera" visible="false" value="Quanti spigoli ha una sfera?\nQuanti vertici ha?" color="#FFFFFF" align="center" width="2.2" position="0 -0.035 0.012"></a-text>
+      </a-entity>
+      <a-text value="Fissa il pulsante per 3 secondi per cambiare stanza" align="center" color="#B5D8EA" width="1.9" position="0 -0.5 -1.35"></a-text>
+    </a-camera>
+  </a-entity>
+</a-scene>
+</body>
+</html>
